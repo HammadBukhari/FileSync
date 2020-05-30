@@ -72,12 +72,12 @@ class ClientHandler {
 
 class SyncServer {
   String rootDirPath;
-  Protocol protocol = Protocol.vector;
+  Protocol protocol;
   int port;
   int clientId;
   ClientHandler clientHandler;
   String serverHostName;
-  SyncServer({this.rootDirPath, this.port, this.clientId});
+  SyncServer({this.rootDirPath, this.port, this.clientId, this.protocol});
 
   void handleNewMeta(FileMeta fileMeta, NodeInfo sender) {
     // add the client to [clienthandler] if not already
@@ -190,7 +190,8 @@ class SyncServer {
         (await NetworkInterface.list()).last.addresses.first.address;
     print('Hostname: $serverHostName');
     var server = await HttpServer.bind(InternetAddress.anyIPv4, port);
-    print('Starting  server at ${server.address.address}:${port}');
+    print(
+        'Starting  server at ${server.address.address}:${port} using ${protocol == Protocol.timestamp ? 'Timestamp' : 'Vector'} protocol');
     await for (var req in server) {
       ContentType contentType = req.headers.contentType;
       HttpResponse response = req.response;
@@ -291,7 +292,7 @@ class SyncServer {
   void initClientHandler() {
     final clientMetaFile = File(join(rootDirPath, '$clientId.clientmeta'));
     if (clientMetaFile.existsSync()) {
-      print("Clients registered:");
+      print('Clients registered:');
       clientHandler = ClientHandler.fromJson(clientMetaFile.readAsStringSync());
       clientHandler.clients.forEach((f) => print('clientId = ${f.id}'));
     } else {
@@ -311,11 +312,11 @@ class SyncServer {
 }
 
 void usage() {
-  print('Usage: SyncServer ROOT_DIRECTORY PORT ID');
+  print('Usage: SyncServer ROOT_DIRECTORY PORT ID PROTOCOL');
 }
 
 void main(List<String> arguments) async {
-  if (arguments.length != 3) {
+  if (arguments.length != 4) {
     usage();
     return;
   }
@@ -340,7 +341,22 @@ void main(List<String> arguments) async {
     print('Invalid client id');
     return;
   }
-  final syncServer =
-      SyncServer(port: port, rootDirPath: rootDirPath, clientId: id);
+  int protocol;
+  try {
+    protocol = int.parse(arguments[3]);
+    if (protocol < 1 || protocol > 2) {
+      print("Protocol can either be 1(timestamp) or 2(vector)");
+      return;
+    }
+  } on FormatException {
+    print('Protocol can either be 1(timestamp) or 2(vector)');
+    return;
+  }
+
+  final syncServer = SyncServer(
+      port: port,
+      rootDirPath: rootDirPath,
+      clientId: id,
+      protocol: Protocol.values[protocol - 1]);
   await syncServer.init();
 }
