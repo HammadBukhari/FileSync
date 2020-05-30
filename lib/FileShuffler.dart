@@ -3,9 +3,8 @@ import 'dart:math';
 import 'package:watcher/watcher.dart';
 
 import 'FileCreator.dart';
-import 'GlobalConstants.dart';
-import 'package:english_words/english_words.dart';
 
+// NOT NEEDED
 class FileShuffler {
   void editRandomFile(String rootDirPath) {
     final directoryFiles = Directory(rootDirPath).listSync();

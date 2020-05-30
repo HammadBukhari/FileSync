@@ -1,0 +1,16 @@
+
+
+file Creator 
+SYNTAX : dart FileCreator.dart pathToStoreFiles NoOfFiles
+EXAMPLE: dart FileCreator.dart "C:\Users\hamma\iot1" 2
+
+SyncServer 
+# Protocol = 1 for timestamp, Protocol = 2 for vector
+SYNTAX: dart SyncServer.dart pathWhereFilesAlreadyExists PortNo UniqueServerId Protocol
+EXAMPLE: dart SyncServer.dart "C:\Users\hamma\iot1" 1999 1 1
+EXAMPLE: dart SyncServer.dart "C:\Users\hamma\iot2" 2000 2 1
+
+SyncClient
+SYNTAX: dart SyncClient.dart clientPath clientUniqueServerId ClientIPAddress ClientPortNo ServerUniqueServerId ServerIpAddress ServerPortNo
+EXAMPLE: dart SyncClient.dart "C:\\Users\\hamma\\iot1" "1" "192.168.2.16" "1999" "2" "192.168.2.16" "2000"
+EXAMPLE: dart SyncClient.dart "C:\\Users\\hamma\\iot2" "2" "192.168.2.16" "2000" "1" "192.168.2.16" "1999"

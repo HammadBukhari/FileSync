@@ -6,11 +6,7 @@ import 'package:watcher/watcher.dart';
 
 import 'package:dart_test/FileMeta.dart';
 import 'package:dart_test/FileServer.dart';
-import 'package:dart_test/FileSync.dart';
 import 'package:dart_test/ServerRepo.dart';
-import 'package:dart_test/SyncClient.dart';
-
-import 'GlobalConstants.dart';
 import 'NetworkMessage.dart';
 import 'NodeInfo.dart';
 
@@ -91,10 +87,10 @@ class SyncServer {
     // file for the first time
     final file = File(join(rootDirPath, fileMeta.fileName));
     if (file.existsSync()) {
-      print("file exists");
+      print('file exists');
       inspectExistingFile(fileMeta, file, sender);
     } else {
-      print("file does not exists");
+      print('file does not exists');
       // request this file from client
       requestFileFromRemoteServer(fileMeta, sender, true);
     }
@@ -114,11 +110,11 @@ class SyncServer {
           remoteServerMeta.timestamps[remoteServer.id.toString()];
       if (serverTimestamp > remoteServerTimestamp) {
         // we already have latest file, ignore this update
-        print("Igonred by timestamp");
+        print('Ignored by timestamp');
         return false;
       } else if (serverTimestamp == remoteServerTimestamp) {
         //conflict
-        print("conflict in timestamp");
+        print('conflict in timestamp');
         // fallback to lower id wins method
         return !(clientId < remoteServer.id);
       } else {
@@ -156,7 +152,7 @@ class SyncServer {
 
       requestFileFromRemoteServer(fileMeta, remoteServer, false);
     } else {
-      print("file already updated");
+      print('file already updated');
     }
   }
 
@@ -176,7 +172,7 @@ class SyncServer {
       payload: fileMeta,
     );
     HttpClientRequest request =
-        await HttpClient().post(remoteServer.hostname, remoteServer.port, "")
+        await HttpClient().post(remoteServer.hostname, remoteServer.port, '')
           ..headers.contentType = ContentType.json
           ..write(requestMessage.toJson());
     HttpClientResponse response = await request.close();
@@ -192,7 +188,7 @@ class SyncServer {
   void initServer() async {
     serverHostName =
         (await NetworkInterface.list()).last.addresses.first.address;
-    print("Hostname: $serverHostName");
+    print('Hostname: $serverHostName');
     var server = await HttpServer.bind(InternetAddress.anyIPv4, port);
     print('Starting  server at ${server.address.address}:${port}');
     await for (var req in server) {
@@ -262,8 +258,8 @@ class SyncServer {
 
   void initWatcher() async {
     DirectoryWatcher(rootDirPath).events.listen((fileChange) {
-      print("New file change");
-      if (fileChange.path.endsWith("clientmeta")) return;
+      print('New file change');
+      if (fileChange.path.endsWith('clientmeta')) return;
       if (fileChange.path.endsWith('meta')) {
         // change in meta file
         // check if modified bit is true
@@ -348,98 +344,3 @@ void main(List<String> arguments) async {
       SyncServer(port: port, rootDirPath: rootDirPath, clientId: id);
   await syncServer.init();
 }
-
-// void getClientsFromFile() {
-//   final clientsFile = File(join(rootDirPath, "$clientId.clientmeta"));
-//   if (!clientsFile.existsSync()) {
-//     return;
-//   }
-//   String fileContent = clientsFile.readAsStringSync();
-//   // clients = List<NodeInfo>.from(jsonDecode(fileContent)['clients']);
-//   Map<String, dynamic> json = jsonDecode(fileContent);
-//   clients = (json['clients'] as List)
-//       .map((value) => NodeInfo.fromJson(value))
-//       .toList();
-
-//   print(clients);
-// }
-
-// void writeClientsToFile() {
-//   final clientsFile = File(join(rootDirPath, "$clientId.clientmeta"));
-//   final fileContent = {'clients': clients};
-//   clientsFile.writeAsStringSync(jsonEncode(fileContent));
-// }
-
-// void sendConnectionRequestResponse(
-//     ServerMeta clientMeta, NodeInfo clientInfo) {
-//   connectToServer(
-//           clientId: clientId,
-//           serverHostName: clientInfo.hostname,
-//           serverPort: clientInfo.port,
-//           clientHostName: serverHostName,
-//           clientPort: port,
-//           rootDirPath: rootDirPath,
-//           type: NetworkMessageType.connectionRequestResponse)
-//       .init();
-// }
-
-// void addNewClient(ServerMeta clientMeta, NodeInfo clientInfo) {
-//   clients.add(clientInfo);
-//   writeClientsToFile();
-//   repo.addNewClient(clientInfo, clientMeta);
-// }
-
-// void applyChange(NodeInfo sender, FileSync file) {
-//   // TODO : Order updates
-//   final localFile = File(join(rootDirPath, basename(file.fileName)));
-//   if (localFile.existsSync()) {
-//     // overwrite it
-//     localFile.writeAsStringSync(file.content);
-//   } else {
-//     // new file add it in modefiedbit
-//     localFile.writeAsStringSync(file.content);
-//   }
-//   print("file updated");
-// }
-
-// void initFileWatcher() {
-//   DirectoryWatcher(rootDirPath).events.listen((fileChange) {
-//     String fileName = basename(fileChange.path);
-//     print("change in $fileName");
-//     if (fileName == '$clientId.clientmeta') {
-//       // change in clientmeta file
-//       repo.clientsModifiedBits.forEach((clientName, bits) {
-//         if (clientName == clientId.toString()) return;
-//         print('client $clientName requires ');
-//         bits.forEach((fileName, value) {
-//           if (value == true) {
-//             print(fileName);
-//             syncFile(clientName, fileName);
-//             value = false;
-//           }
-//         });
-//       });
-//     } else if (fileName == '$clientId.meta') {
-//       // sync file with changed meta info
-//       repo.clientsModifiedBits.forEach((clientName, bits) {
-//         if (clientName == clientId.toString()) return;
-//         print('client $clientName requires ');
-//         bits.forEach((fileName, value) {
-//           if (value == true) {
-//             print(fileName);
-//             syncFile(clientName, fileName);
-//             value = false;
-//           }
-//         });
-//       });
-//       return;
-//     } else if (fileChange.type == ChangeType.MODIFY) {
-//       // change in actual file
-//       // repo.clientsModifiedBits[clientId.toString()][fileName] = true;
-//       repo.clientsModifiedBits.forEach((clientid, filebits) {
-//         filebits[fileName] = true;
-//       });
-//       repo.writeJson();
-//     }
-//   });
-// }
