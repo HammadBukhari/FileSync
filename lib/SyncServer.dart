@@ -146,7 +146,7 @@ class SyncServer {
 
   void inspectExistingFile(
       FileMeta fileMeta, File file, NodeInfo remoteServer) async {
-    if (fileMeta.modbits[clientId.toString()] &&
+    if (fileMeta.modbits[clientId.toString()] != null && fileMeta.modbits[clientId.toString()] &&
         checkUpdateOrder(fileMeta, remoteServer)) {
       // if the sender made any change since last fetch
 
@@ -345,7 +345,7 @@ void main(List<String> arguments) async {
   try {
     protocol = int.parse(arguments[3]);
     if (protocol < 1 || protocol > 2) {
-      print("Protocol can either be 1(timestamp) or 2(vector)");
+      print('Protocol can either be 1(timestamp) or 2(vector)');
       return;
     }
   } on FormatException {
